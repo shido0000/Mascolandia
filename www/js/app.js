@@ -6,6 +6,8 @@ import {
 import { getCatalog, productById, isOwned, purchase, applyPurchase, restorePurchases, SUBSCRIPTION_PLANS } from "./iap.js";
 import { requestNotificationPermission, scheduleRoutineReminder, cancelRoutineReminder, haptic } from "./notifications.js";
 import { Share } from "@capacitor/share";
+import { saveCard, getCard, hasCard, deleteCard, maskCard } from "./crypto.js";
+import { pay } from "./ussd.js";
 
 const view = document.getElementById("view");
 const tabbar = document.getElementById("tabbar");
@@ -35,7 +37,27 @@ function fmtDate(iso) {
 }
 
 function fmtMoney(n) {
-  return n.toLocaleString(getLang(), { style: "currency", currency: "EUR" });
+  return `${Number(n).toLocaleString(getLang(), { minimumFractionDigits: 0, maximumFractionDigits: 2 })} CUP`;
+}
+
+function formatPrice(n) {
+  return `${n} CUP`;
+}
+
+async function processPayment(amount, onSuccess) {
+  if (!(await hasCard())) {
+    toast(t("cardMissing"));
+    navigate("settings");
+    return;
+  }
+  toast(t("payProcessing"));
+  const res = await pay(amount);
+  if (res.ok) {
+    toast(t("paySuccess", { amount }));
+    onSuccess();
+  } else {
+    toast(t("payError"));
+  }
 }
 
 function petAge(birth) {
@@ -583,10 +605,10 @@ function renderStore() {
             ${owned && g.kind !== "consult"
               ? `<button class="btn small secondary" data-open="${id}">${esc(t("open"))}</button>`
               : g.kind === "consult"
-                ? `<button class="btn small" data-buy="${id}">${esc(t("buy"))} · ${p.price}</button>`
+                ? `<button class="btn small" data-buy="${id}">${esc(t("buy"))} · ${formatPrice(p.price)}</button>`
                 : isOwned(s.purchases, id)
                   ? `<span class="owned-tag">✓ ${esc(t("owned"))}</span>`
-                  : `<button class="btn small" data-buy="${id}">${esc(t("buy"))} · ${p.price}</button>`}
+                  : `<button class="btn small" data-buy="${id}">${esc(t("buy"))} · ${formatPrice(p.price)}</button>`}
           </div>`;
         }).join("")}
       </div>`).join("")}
@@ -602,16 +624,19 @@ function renderStore() {
         <p style="font-size:.78rem;color:var(--text-soft);margin:8px 0">${esc(t("buyConfirmText"))}</p>
         <div class="modal-actions">
           <button class="btn secondary" id="m-cancel">${esc(t("cancel"))}</button>
-          <button class="btn" id="m-ok">${esc(t("confirmPurchase", { price: p.price }))}</button>
+          <button class="btn" id="m-ok">${esc(t("confirmPurchase", { price: formatPrice(p.price) }))}</button>
         </div>`);
       document.getElementById("m-cancel").onclick = closeModal;
       document.getElementById("m-ok").onclick = async () => {
         document.getElementById("m-ok").disabled = true;
-        await purchase(id);
-        update((st) => applyPurchase(st, id));
-        closeModal();
-        toast(t("purchased"));
-        render();
+        await processPayment(p.price, () => {
+          purchase(id);
+          update((st) => applyPurchase(st, id));
+          closeModal();
+          toast(t("purchased"));
+          render();
+        });
+        document.getElementById("m-ok").disabled = false;
       };
     };
   });
@@ -707,29 +732,32 @@ function renderPremium() {
     </ul>
     ${isPremium()
       ? `<div class="banner"><span class="banner-icon">✅</span><div><strong>${esc(t("premiumActive"))}</strong><br/>${esc(t("renewsOn"))} ${fmtDate(s.subscription.renews)}<br/><span style="font-size:.72rem">${esc(t("manageSub"))}</span></div></div>`
-      : `<div class="card">
-          <div class="field-row">
-            ${Object.entries(SUBSCRIPTION_PLANS).map(([id, p]) => `
-              <button class="btn ${id === "yearly" ? "" : "secondary"}" data-plan="${id}">
-                ${esc(t(id === "yearly" ? "planYearly" : "planMonthly"))}<br/><strong>${p.price}</strong> <small>${esc(t(p.period))}</small>
-              </button>`).join("")}
-          </div>
-          <p style="font-size:.72rem;color:var(--text-soft);margin-top:10px">${esc(t("subSimulated"))}</p>
-        </div>`}
+      : Object.entries(SUBSCRIPTION_PLANS).map(([id, p]) => `
+          <div class="card plan-card">
+            <div class="plan-info">
+              <div class="plan-name">${esc(t(id === "yearly" ? "planYearly" : "planMonthly"))}</div>
+              <div class="plan-price">${formatPrice(p.price)} <small>${esc(t(p.period))}</small></div>
+            </div>
+            <button class="btn" data-plan="${id}">${esc(t("subscribe"))}</button>
+          </div>`).join("") +
+        `<p style="font-size:.72rem;color:var(--text-soft);margin:2px 2px 14px">${esc(t("subSimulated"))}</p>`}
     <button class="btn secondary" id="btn-restore">↩️ ${esc(t("restore"))}</button>`;
   view.querySelectorAll("[data-plan]").forEach((b) => {
     b.onclick = async () => {
-      b.disabled = true;
       const plan = b.dataset.plan;
-      await new Promise((r) => setTimeout(r, 600));
-      const renews = new Date();
-      if (plan === "monthly") renews.setDate(renews.getDate() + 30);
-      else renews.setFullYear(renews.getFullYear() + 1);
-      update((st) => {
-        st.subscription = { plan, since: todayKey(), renews: todayKey(renews) };
+      const price = SUBSCRIPTION_PLANS[plan].price;
+      b.disabled = true;
+      await processPayment(price, async () => {
+        const renews = new Date();
+        if (plan === "monthly") renews.setDate(renews.getDate() + 30);
+        else renews.setFullYear(renews.getFullYear() + 1);
+        update((st) => {
+          st.subscription = { plan, since: todayKey(), renews: todayKey(renews) };
+        });
+        toast(t("subscribed"));
+        render();
       });
-      toast(t("subscribed"));
-      render();
+      b.disabled = false;
     };
   });
   document.getElementById("btn-restore").onclick = async () => {
@@ -750,6 +778,7 @@ function renderSettings() {
       <div class="settings-row"><div><div class="sr-label">${esc(t("theme"))}</div></div></div>
       <div class="seg">${themeBtn("system", "themeSystem")}${themeBtn("light", "themeLight")}${themeBtn("dark", "themeDark")}</div>
     </div>
+    <div class="card" id="card-section"></div>
     <div class="card">
       <div class="settings-row">
         <div><div class="sr-label">${esc(t("notifications"))}</div><div class="sr-sub">${esc(t("notificationsSub"))}</div></div>
@@ -789,6 +818,7 @@ function renderSettings() {
     }
   };
   document.getElementById("st-premium").onclick = () => navigate("premium");
+  renderCardSection();
   document.getElementById("st-export").onclick = async () => {
     const json = exportJson();
     try {
@@ -806,6 +836,50 @@ function renderSettings() {
       replaceState(defaultSettings());
       toast(t("deleteData"));
     }, t("deleteData"));
+}
+
+async function renderCardSection() {
+  const sec = document.getElementById("card-section");
+  if (!sec) return;
+  const card = await getCard();
+  if (card) {
+    sec.innerHTML = `
+      <div class="settings-row">
+        <div><div class="sr-label">💳 ${esc(t("payMethod"))}</div><div class="sr-sub">${esc(maskCard(card.number))} · ${esc(card.bank === "bandec" ? t("bankBandec") : t("bankBanmet"))}</div></div>
+        <button class="btn small danger" id="st-delcard">🗑️</button>
+      </div>
+      <div class="sr-sub" style="font-size:.72rem;color:var(--text-soft);margin-top:8px">🔒 ${esc(t("payMethodSub"))}</div>`;
+    document.getElementById("st-delcard").onclick = () =>
+      confirmModal(t("deleteCardBtn"), maskCard(card.number), async () => {
+        await deleteCard();
+        toast(t("deleteData"));
+        renderCardSection();
+      });
+    return;
+  }
+  sec.innerHTML = `
+    <h2 style="margin-bottom:10px">💳 ${esc(t("payMethod"))}</h2>
+    <div class="field"><label>${esc(t("cardNumber"))}</label><input id="f-cardnum" inputmode="numeric" maxlength="19" placeholder="0000 0000 0000 0000" /></div>
+    <div class="field-row">
+      <div class="field"><label>${esc(t("cardPin"))}</label><input id="f-cardpin" type="password" inputmode="numeric" maxlength="8" /></div>
+      <div class="field"><label>${esc(t("cardBank"))}</label>
+        <select id="f-cardbank">
+          <option value="banmet">${esc(t("bankBanmet"))}</option>
+          <option value="bandec">${esc(t("bankBandec"))}</option>
+        </select>
+      </div>
+    </div>
+    <div class="sr-sub" style="font-size:.72rem;color:var(--text-soft);margin-bottom:10px">🔒 ${esc(t("payMethodSub"))}</div>
+    <button class="btn" id="st-savecard">💾 ${esc(t("saveCardBtn"))}</button>`;
+  document.getElementById("st-savecard").onclick = async () => {
+    const number = document.getElementById("f-cardnum").value.replace(/\s/g, "");
+    const pin = document.getElementById("f-cardpin").value.trim();
+    const bank = document.getElementById("f-cardbank").value;
+    if (!/^\d{16,19}$/.test(number) || !pin) return toast(t("invalidCard"));
+    await saveCard({ number, pin, bank });
+    toast(t("cardSaved"));
+    renderCardSection();
+  };
 }
 
 function defaultSettings() {

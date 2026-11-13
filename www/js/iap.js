@@ -2,7 +2,7 @@ const CATALOG = {
   "tpl.obediencia": {
     kind: "training",
     icon: "🎓",
-    price: "2,99 €",
+    price: 1,
     credits: 0,
     i18nName: "tplObediencia",
     i18nDesc: "tplObedienciaDesc",
@@ -10,7 +10,7 @@ const CATALOG = {
   "tpl.cachorro": {
     kind: "training",
     icon: "🐶",
-    price: "3,49 €",
+    price: 2,
     credits: 0,
     i18nName: "tplCachorro",
     i18nDesc: "tplCachorroDesc",
@@ -18,7 +18,7 @@ const CATALOG = {
   "tpl.correa": {
     kind: "training",
     icon: "🦮",
-    price: "2,49 €",
+    price: 1,
     credits: 0,
     i18nName: "tplCorrea",
     i18nDesc: "tplCorreaDesc",
@@ -26,7 +26,7 @@ const CATALOG = {
   "pack.indoor": {
     kind: "exercise",
     icon: "🏠",
-    price: "1,99 €",
+    price: 1,
     credits: 0,
     i18nName: "packIndoor",
     i18nDesc: "packIndoorDesc",
@@ -34,7 +34,7 @@ const CATALOG = {
   "pack.agility": {
     kind: "exercise",
     icon: "🏃",
-    price: "2,99 €",
+    price: 2,
     credits: 0,
     i18nName: "packAgility",
     i18nDesc: "packAgilityDesc",
@@ -42,7 +42,7 @@ const CATALOG = {
   "pack.gato": {
     kind: "exercise",
     icon: "🐱",
-    price: "1,99 €",
+    price: 1,
     credits: 0,
     i18nName: "packGato",
     i18nDesc: "packGatoDesc",
@@ -50,7 +50,7 @@ const CATALOG = {
   "cons.pack1": {
     kind: "consult",
     icon: "🩺",
-    price: "9,99 €",
+    price: 1,
     credits: 1,
     i18nName: "consPack1",
     i18nDesc: "consPack1Desc",
@@ -58,7 +58,7 @@ const CATALOG = {
   "cons.pack3": {
     kind: "consult",
     icon: "🩺",
-    price: "24,99 €",
+    price: 2,
     credits: 3,
     i18nName: "consPack3",
     i18nDesc: "consPack3Desc",
@@ -66,8 +66,8 @@ const CATALOG = {
 };
 
 export const SUBSCRIPTION_PLANS = {
-  monthly: { price: "4,99 €", period: "perMonth" },
-  yearly: { price: "39,99 €", period: "perYear" },
+  monthly: { price: 1, period: "perMonth" },
+  yearly: { price: 2, period: "perYear" },
 };
 
 export function getCatalog() {

@@ -240,6 +240,14 @@ body {
 }
 .seg button.active { background: var(--primary); color: #fff; }
 
+.plan-card {
+  display: flex; align-items: center; justify-content: space-between; gap: 14px;
+}
+.plan-card .plan-name { font-weight: 800; font-size: 0.95rem; }
+.plan-card .plan-price { font-size: 1.5rem; font-weight: 800; color: var(--primary); margin-top: 2px; }
+.plan-card .plan-price small { font-size: 0.72rem; font-weight: 600; color: var(--text-soft); }
+.plan-card .btn { width: auto; min-width: 128px; }
+
 .store-item { display: flex; gap: 12px; align-items: center; }
 .store-item .li-icon { width: 48px; height: 48px; font-size: 1.5rem; }
 .price-tag { font-weight: 800; color: var(--primary); font-size: 0.9rem; white-space: nowrap; }
