@@ -3,10 +3,11 @@
   "version": "1.0.0",
   "description": "App para mascotas: salud, rutinas y gastos (Capacitor + Android)",
   "scripts": {
-    "cap:sync": "cap sync android",
+    "build": "esbuild www/js/app.js --bundle --format=esm --minify --outfile=www/dist/app.js",
+    "cap:sync": "npm run build && cap sync android",
     "open:android": "cap open android",
-    "apk:debug": "cap sync android && cd android && ./gradlew assembleDebug",
-    "apk:release": "cap sync android && cd android && ./gradlew assembleRelease"
+    "apk:debug": "npm run cap:sync && cd android && ./gradlew assembleDebug",
+    "apk:release": "npm run cap:sync && cd android && ./gradlew assembleRelease"
   },
   "repository": {
     "type": "git",
@@ -33,7 +34,9 @@
     "@capacitor/share": "^8.0.3"
   },
   "devDependencies": {
-    "@capacitor/cli": "^8.6.2"
+    "@capacitor/cli": "^8.6.2",
+    "esbuild": "^0.28.2",
+    "sharp": "^0.35.5"
   },
   "type": "module"
 }

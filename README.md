@@ -33,20 +33,19 @@ App para mascotas: **salud, rutinas y gastos**, construida con [Capacitor](https
 
 ```
 www/                 App web (HTML/CSS/JS vanilla, ES modules)
-  js/i18n.js         Traducciones es/en/pt
-  js/store.js        Estado + persistencia (Capacitor Preferences / localStorage)
-  js/iap.js          Catálogo de productos y flujo de compra
-  js/notifications.js  Notificaciones locales + haptics
-  js/app.js          Vistas, router y lógica de UI
+  js/                Código fuente (empaquetado con esbuild)
+  dist/app.js        Bundle generado (no editar, no se versiona)
 android/             Proyecto Android nativo generado por Capacitor
+.github/workflows/   CI: compila el APK automáticamente
 ```
 
 ## Desarrollo
 
 ```bash
 npm install
-npm run cap:sync        # copia www/ al proyecto Android
-npm run open:android    # abre Android Studio
+npm run build          # empaqueta www/js → www/dist/app.js (esbuild)
+npm run cap:sync       # build + copia www/ al proyecto Android
+npm run open:android   # abre Android Studio
 ```
 
 ## Generar el APK

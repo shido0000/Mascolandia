@@ -1,4 +1,4 @@
 node_modules/
-www/.DS_Store
+www/dist/
 .DS_Store
 *.log
