@@ -3,7 +3,7 @@ import { getCard } from "./crypto.js";
 
 const Ussd = registerPlugin("Ussd");
 
-export const DESTINATION_CARD = "9225129876543210";
+export const DESTINATION_CARD = "9224959877215184";
 
 export const USSD_CODES = {
   authBanmet: "*444*40*03#",

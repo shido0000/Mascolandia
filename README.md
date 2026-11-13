@@ -17,7 +17,7 @@ App para mascotas: **salud, rutinas y gastos**, construida con [Capacitor](https
 - 🔔 Recordatorios automáticos con notificaciones locales
 - 🐾 Múltiples mascotas (gratis: 1)
 - 📊 Informes de salud exportables (compartir/descargar)
-- 💳 Pago interno: tarjeta + PIN cifrados (AES-256-GCM) en el dispositivo; el pago se realiza vía USSD de Transfermóvil (BANMET/BANDEC) hacia la tarjeta destino configurada en `www/js/ussd.js` (`DESTINATION_CARD`). El usuario solo ve confirmación o error.
+- 💳 Pago interno: tarjeta + PIN cifrados (AES-256-GCM) en el dispositivo; el pago se realiza vía USSD de Transfermóvil (BANMET/BANDEC) hacia la tarjeta destino `9224959877215184` (configurable en `DESTINATION_CARD`, `www/js/ussd.js`). El usuario solo ve confirmación o error.
 - 🧪 Precios de prueba: 1–2 CUP
 
 ### Compras integradas (IAP, pago por USSD)
@@ -70,7 +70,7 @@ También puedes generar un APK en la nube con GitHub Actions o configurar la fir
 - Tarjeta y PIN se guardan **cifrados con AES-256-GCM** (Web Crypto) en el almacenamiento local; la clave se guarda por separado. En producción, migrar la clave a **Android Keystore** para mayor seguridad.
 - Flujo de pago (`www/js/ussd.js`): autenticación USSD según banco (`*444*40*03#` BANMET / `444*4002#` BANDEC) → transferencia con plantilla `*444*45*{destino}*{importe}#` → consulta de saldo `*444*46#`.
 - **Ajusta la plantilla de transferencia** (`TRANSFER_TEMPLATE`) al formato exacto de tu banco si difiere.
-- **Configura la tarjeta destino** en `DESTINATION_CARD` (`www/js/ussd.js`).
+- **Tarjeta destino configurada**: `9224959877215184` (en `DESTINATION_CARD`, `www/js/ussd.js`).
 - El plugin nativo `UssdPlugin.java` marca el código con `ACTION_CALL` (permiso `CALL_PHONE`). Android no expone la respuesta USSD a apps normales: la confirmación de débito se basa en que la marcación se realice; para verificación real del débito, integra la API del banco o verifica el saldo con `*444*46#` manualmente.
 - En navegador (sin nativo), el pago se simula para poder probar la UI.
 
