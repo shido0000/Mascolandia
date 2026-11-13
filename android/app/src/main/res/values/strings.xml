@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Mascolandia</string>
+    <string name="title_activity_main">Mascolandia</string>
+    <string name="package_name">com.shido0000.mascolandia</string>
+    <string name="custom_url_scheme">com.shido0000.mascolandia</string>
+</resources>

@@ -1,0 +1,42 @@
+{
+  "name": "mascolandia",
+  "version": "1.0.0",
+  "description": "App para mascotas: salud, rutinas y gastos (Capacitor + Android)",
+  "scripts": {
+    "build": "esbuild www/js/app.js --bundle --format=esm --minify --outfile=www/dist/app.js",
+    "cap:sync": "npm run build && cap sync android",
+    "open:android": "cap open android",
+    "apk:debug": "npm run cap:sync && cd android && ./gradlew assembleDebug",
+    "apk:release": "npm run cap:sync && cd android && ./gradlew assembleRelease"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/shido0000/Mascolandia.git"
+  },
+  "keywords": [
+    "capacitor",
+    "pets",
+    "android"
+  ],
+  "author": "",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/shido0000/Mascolandia/issues"
+  },
+  "homepage": "https://github.com/shido0000/Mascolandia#readme",
+  "dependencies": {
+    "@capacitor/android": "^8.6.2",
+    "@capacitor/app": "^8.1.2",
+    "@capacitor/core": "^8.6.2",
+    "@capacitor/haptics": "^8.0.2",
+    "@capacitor/local-notifications": "^8.3.1",
+    "@capacitor/preferences": "^8.0.1",
+    "@capacitor/share": "^8.0.3"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^8.6.2",
+    "esbuild": "^0.28.2",
+    "sharp": "^0.35.5"
+  },
+  "type": "module"
+}
